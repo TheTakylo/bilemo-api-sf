@@ -12,7 +12,7 @@ use OpenApi\Annotations as OA;
 class Product
 {
     /**
-     * @OA\Property(description="The unique identifier of the product.")
+     * @OA\Property(type="integer", description="The unique identifier of the product.")
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
