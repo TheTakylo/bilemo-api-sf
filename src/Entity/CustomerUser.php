@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=CustomerUserRepository::class)
@@ -20,24 +21,29 @@ class CustomerUser
     private $id;
 
     /**
+     * @Assert\NotBlank()
+     * @Assert\Email()
      * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
      */
     private $email;
 
     /**
+     * @Assert\NotBlank()
      * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
      */
     private $password;
 
     /**
+     * @Assert\NotBlank()
      * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
      */
     private $firstname;
 
     /**
+     * @Assert\NotBlank()
      * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
      */
