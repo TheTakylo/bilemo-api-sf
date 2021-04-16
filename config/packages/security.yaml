@@ -26,6 +26,7 @@ security:
 
         api:
             pattern:   ^/api
+            anonymous: true
             stateless: true
             guard:
                 authenticators:
