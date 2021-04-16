@@ -31,4 +31,15 @@ class ProductController extends AbstractController
     {
         return $this->json($product);
     }
+
+    /**
+     * @Route("/{id}", methods={"DELETE"})
+     */
+    public function deleteItem(Product $product, EntityManagerInterface $em): Response
+    {
+        $em->remove($product);
+        $em->flush();
+
+        return new Response();
+    }
 }
