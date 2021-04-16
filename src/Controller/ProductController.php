@@ -2,14 +2,15 @@
 
 namespace App\Controller;
 
-use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
+ * @IsGranted("ROLE_USER")
  * @Route("/api/products")
  */
 class ProductController extends AbstractController
@@ -27,16 +28,20 @@ class ProductController extends AbstractController
     /**
      * @Route("/{id}", methods={"GET"})
      */
-    public function getItem(Product $product): Response
+    public function getItem(int $id, ProductRepository $productRepository): Response
     {
+        $product = $productRepository->findOneBy(['id' => $id]);
+
         return $this->json($product);
     }
 
     /**
      * @Route("/{id}", methods={"DELETE"})
      */
-    public function deleteItem(Product $product, EntityManagerInterface $em): Response
+    public function deleteItem(int $id, ProductRepository $productRepository, EntityManagerInterface $em): Response
     {
+        $product = $productRepository->findOneBy(['id' => $id]);
+
         $em->remove($product);
         $em->flush();
 
