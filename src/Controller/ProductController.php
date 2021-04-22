@@ -3,11 +3,11 @@
 namespace App\Controller;
 
 use App\Repository\ProductRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 /**
  * @IsGranted("ROLE_USER")
@@ -18,21 +18,25 @@ class ProductController extends AbstractController
     /**
      * @Route("", methods={"GET"})
      */
-    public function getCollection(ProductRepository $productRepository): Response
+    public function getCollection(ProductRepository $productRepository, NormalizerInterface $normalizer): Response
     {
-        $products = $productRepository->findAll();
+        $products = $normalizer->normalize($productRepository->findAll());
+
+        foreach ($products as $k => $v) {
+            $products[$k]['@id'] = $this->generateUrl('product_getitem', ['id' => $v['id']]);
+        }
 
         return $this->json($products);
     }
 
     /**
-     * @Route("/{id<\d+>}", methods={"GET"})
+     * @Route("/{id<\d+>}", methods={"GET"}, name="product_getitem")
      */
     public function getItem(int $id, ProductRepository $productRepository): Response
     {
         $product = $productRepository->findOneBy(['id' => $id]);
 
-        if(!$product) {
+        if (!$product) {
             throw $this->createNotFoundException();
         }
 

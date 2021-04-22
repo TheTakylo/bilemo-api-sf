@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -23,11 +24,15 @@ class CustomerUserController extends AbstractController
     /**
      * @Route("", methods="GET")
      */
-    public function getCollection(CustomerUserRepository $customerUserRepository): Response
+    public function getCollection(CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer): Response
     {
-        $customers = $customerUserRepository->findBy(['customer' => $this->getUser()]);
+        $customers = $normalizer->normalize($customerUserRepository->findBy(['customer' => $this->getUser()]), null, ['groups' => 'read']);
 
-        return $this->json($customers, 200, [], ['groups' => 'read']);
+        foreach ($customers as $k => $v) {
+            $customers[$k]['@id'] = $this->generateUrl('customer_users_getitem', ['id' => $v['id']]);
+        }
+
+        return $this->json($customers, 200);
     }
 
     /**
@@ -52,7 +57,7 @@ class CustomerUserController extends AbstractController
     }
 
     /**
-     * @Route("/{id<\d+>}", methods="GET")
+     * @Route("/{id<\d+>}", methods="GET", name="customer_users_getitem")
      */
     public function getItem(int $id, CustomerUserRepository $customerUserRepository): Response
     {
