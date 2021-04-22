@@ -26,11 +26,15 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", methods={"GET"})
+     * @Route("/{id<\d+>}", methods={"GET"})
      */
     public function getItem(int $id, ProductRepository $productRepository): Response
     {
         $product = $productRepository->findOneBy(['id' => $id]);
+
+        if(!$product) {
+            throw $this->createNotFoundException();
+        }
 
         return $this->json($product);
     }

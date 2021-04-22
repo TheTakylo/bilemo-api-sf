@@ -27,5 +27,13 @@ services:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+    App\Listener\Kernel\ExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
+
+    App\Normalizer\:
+        resource: '../src/Normalizer'
+        tags: [ 'serializer.normalizer' ]
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

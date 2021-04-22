@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class CustomerUserController extends AbstractController
 {
     /**
-     * @Route("", methods="GET")
+     * @Route("/", methods="GET")
      */
     public function getCollection(CustomerUserRepository $customerUserRepository): Response
     {
@@ -30,7 +30,7 @@ class CustomerUserController extends AbstractController
     }
 
     /**
-     * @Route("", methods="POST")
+     * @Route("/", methods="POST")
      */
     public function postCollection(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator): Response
     {
@@ -50,10 +50,8 @@ class CustomerUserController extends AbstractController
         return $this->json($customerUser, 200, [], ['groups' => 'read']);
     }
 
-
-
     /**
-     * @Route("/{id}", methods="GET")
+     * @Route("/{id<\d+>}", methods="GET")
      */
     public function getItem(int $id, CustomerUserRepository $customerUserRepository): Response
     {
@@ -67,7 +65,7 @@ class CustomerUserController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", methods="DELETE")
+     * @Route("/{id<\d+>}", methods="DELETE")
      */
     public function deleteItem(int $id, CustomerUserRepository $customerUserRepository, EntityManagerInterface $em): Response
     {
