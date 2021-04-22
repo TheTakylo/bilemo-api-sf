@@ -34,17 +34,4 @@ class ProductController extends AbstractController
 
         return $this->json($product);
     }
-
-    /**
-     * @Route("/{id}", methods={"DELETE"})
-     */
-    public function deleteItem(int $id, ProductRepository $productRepository, EntityManagerInterface $em): Response
-    {
-        $product = $productRepository->findOneBy(['id' => $id]);
-
-        $em->remove($product);
-        $em->flush();
-
-        return new Response();
-    }
 }
