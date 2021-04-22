@@ -28,6 +28,8 @@ services:
         tags: ['controller.service_arguments']
 
     App\Listener\Kernel\ExceptionListener:
+        arguments:
+            $normalizers: !tagged { tag: 'serializer.normalizer' }
         tags:
             - { name: kernel.event_listener, event: kernel.exception }
 

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\CustomerUser;
+use App\Exception\FormValidationErrorException;
 use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -20,7 +21,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class CustomerUserController extends AbstractController
 {
     /**
-     * @Route("/", methods="GET")
+     * @Route("", methods="GET")
      */
     public function getCollection(CustomerUserRepository $customerUserRepository): Response
     {
@@ -30,7 +31,7 @@ class CustomerUserController extends AbstractController
     }
 
     /**
-     * @Route("/", methods="POST")
+     * @Route("", methods="POST")
      */
     public function postCollection(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator): Response
     {
@@ -41,7 +42,7 @@ class CustomerUserController extends AbstractController
         $errors = $validator->validate($customerUser);
 
         if (count($errors) > 0) {
-            return $this->json($errors);
+            throw new FormValidationErrorException($errors);
         }
 
         $em->persist($customerUser);

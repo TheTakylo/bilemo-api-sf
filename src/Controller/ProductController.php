@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProductController extends AbstractController
 {
     /**
-     * @Route("/", methods={"GET"})
+     * @Route("", methods={"GET"})
      */
     public function getCollection(ProductRepository $productRepository): Response
     {
