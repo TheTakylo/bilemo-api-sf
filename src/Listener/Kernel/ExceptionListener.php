@@ -2,6 +2,7 @@
 
 namespace App\Listener\Kernel;
 
+use App\Normalizer\ApiAbstractNormalizer;
 use Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,7 +29,7 @@ class ExceptionListener implements EventSubscriberInterface
         $response = null;
 
         foreach ($this->normalizers as $normalizer) {
-            if ($normalizer instanceof NormalizerInterface && $normalizer->supportsNormalization($exception)) {
+            if ($normalizer instanceof ApiAbstractNormalizer && $normalizer->supportsNormalization($exception)) {
                 $response = $normalizer->normalize($exception);
                 break;
             }
