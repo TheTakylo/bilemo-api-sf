@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProductController extends AbstractController
 {
     /**
-     * @Route("/", methods={"GET"})
+     * @Route("", methods={"GET"})
      */
     public function getCollection(ProductRepository $productRepository): Response
     {
@@ -26,25 +26,16 @@ class ProductController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", methods={"GET"})
+     * @Route("/{id<\d+>}", methods={"GET"})
      */
     public function getItem(int $id, ProductRepository $productRepository): Response
     {
         $product = $productRepository->findOneBy(['id' => $id]);
 
+        if(!$product) {
+            throw $this->createNotFoundException();
+        }
+
         return $this->json($product);
-    }
-
-    /**
-     * @Route("/{id}", methods={"DELETE"})
-     */
-    public function deleteItem(int $id, ProductRepository $productRepository, EntityManagerInterface $em): Response
-    {
-        $product = $productRepository->findOneBy(['id' => $id]);
-
-        $em->remove($product);
-        $em->flush();
-
-        return new Response();
     }
 }

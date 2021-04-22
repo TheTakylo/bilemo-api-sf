@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\CustomerUser;
+use App\Exception\FormValidationErrorException;
 use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -41,7 +42,7 @@ class CustomerUserController extends AbstractController
         $errors = $validator->validate($customerUser);
 
         if (count($errors) > 0) {
-            return $this->json($errors);
+            throw new FormValidationErrorException($errors);
         }
 
         $em->persist($customerUser);
@@ -50,10 +51,8 @@ class CustomerUserController extends AbstractController
         return $this->json($customerUser, 200, [], ['groups' => 'read']);
     }
 
-
-
     /**
-     * @Route("/{id}", methods="GET")
+     * @Route("/{id<\d+>}", methods="GET")
      */
     public function getItem(int $id, CustomerUserRepository $customerUserRepository): Response
     {
@@ -67,7 +66,7 @@ class CustomerUserController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", methods="DELETE")
+     * @Route("/{id<\d+>}", methods="DELETE")
      */
     public function deleteItem(int $id, CustomerUserRepository $customerUserRepository, EntityManagerInterface $em): Response
     {
