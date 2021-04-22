@@ -6,6 +6,8 @@ use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Annotations as OA;
 
 /**
  * @ORM\Entity(repositoryClass=CustomerUserRepository::class)
@@ -13,6 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class CustomerUser
 {
     /**
+     * @OA\Property(type="integer", description="The unique identifier of the customer user.")
      * @Groups({"read"})
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -21,6 +24,7 @@ class CustomerUser
     private $id;
 
     /**
+     * @OA\Property(type="string", description="The email of the customer user.", maxLength=255)
      * @Assert\NotBlank()
      * @Assert\Email()
      * @Groups({"read", "write"})
@@ -29,6 +33,7 @@ class CustomerUser
     private $email;
 
     /**
+     * @OA\Property(type="string", description="The password of the customer user.", maxLength=255)
      * @Assert\NotBlank()
      * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
@@ -36,6 +41,7 @@ class CustomerUser
     private $password;
 
     /**
+     * @OA\Property(type="string", description="The firstname of the customer user.", maxLength=255)
      * @Assert\NotBlank()
      * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
@@ -43,6 +49,7 @@ class CustomerUser
     private $firstname;
 
     /**
+     * @OA\Property(type="string", description="The lastname of the customer user.", maxLength=255)
      * @Assert\NotBlank()
      * @Groups({"read", "write"})
      * @ORM\Column(type="string", length=255)
