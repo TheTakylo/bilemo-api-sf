@@ -13,7 +13,7 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: p7_sebastien_thuret_bilemo_api_sf_tests
         ports:
           - 3306
@@ -24,7 +24,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: ctype, iconv
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
 
       - uses: actions/checkout@v2
         with:
@@ -33,11 +33,12 @@ jobs:
       - name: Install composer dependencies
         run: composer install
 
-      - name: Install database
-        run: php bin/console doctrine:schema:update --force --no-interaction
-
-      - name: Install fixtures
-        run: php bin/console doctrine:fixtures:load --no-interaction
+      - name: Install database and fixtures
+        run: |
+          php bin/console doctrine:schema:update --force --no-interaction
+          php bin/console doctrine:fixtures:load --no-interaction
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/p7_sebastien_thuret_bilemo_api_sf_tests
 
       - name: Run phpunit
         run: ./bin/phpunit -c phpunit.xml
