@@ -1,0 +1,26 @@
+name: PHPUnit
+on: [ push, pull_request ]
+jobs:
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [ '7.2', '7.3', '7.4' ]
+      fail-fast: false
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ctype, iconv
+          
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install composer dependencies
+        run: composer install
+
+      - name: Run phpunit
+        run: ./bin/phpunit -c phpunit.xml
