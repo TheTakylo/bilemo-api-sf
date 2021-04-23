@@ -68,7 +68,7 @@ class CustomerUserControllerTest extends ApiWebTestCase
         $this->assertResponseStatusCodeSame(500);
     }
 
-    public function testAddProduct()
+    public function testAddCustomerUser()
     {
         $client = $this->getAuthenticatedClient();
 
@@ -78,8 +78,8 @@ class CustomerUserControllerTest extends ApiWebTestCase
             array('CONTENT_TYPE' => 'application/json'),
             '{"email":"test@test.fr","password":"password","firstname":"john","lastname":"doe"}');
 
-        // TODO: comment verifier l'id qui change ?
-        // $this->assertEquals('{"email":"test@test.fr","password":"password","firstname":"john","lastname":"doe"}', $client->getResponse()->getContent());
+        //todo: json decode
+        $this->assertEquals('{"id":111,"email":"test@test.fr","password":"password","firstname":"john","lastname":"doe"}', $client->getResponse()->getContent());
         $this->assertResponseStatusCodeSame(200);
     }
 
