@@ -8,13 +8,24 @@ jobs:
       matrix:
         php: [ '7.2', '7.3', '7.4' ]
       fail-fast: false
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: p7_sebastien_thuret_bilemo_api_sf_tests
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     steps:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: ctype, iconv
-          
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -22,5 +33,13 @@ jobs:
       - name: Install composer dependencies
         run: composer install
 
+      - name: Install database
+        run: php bin/console doctrine:schema:update --force --no-interaction
+
+      - name: Install fixtures
+        run: php bin/console doctrine:fixtures:load --no-interaction
+
       - name: Run phpunit
         run: ./bin/phpunit -c phpunit.xml
+        env:
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
