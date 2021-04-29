@@ -450,9 +450,6 @@
     "twig/extra-bundle": {
         "version": "v3.3.0"
     },
-    "twig/twig": {
-        "version": "v3.3.0"
-    },
     "webmozart/assert": {
         "version": "1.10.0"
     },

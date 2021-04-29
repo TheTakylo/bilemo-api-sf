@@ -2,27 +2,63 @@
 
 namespace App\Tests\Controller;
 
-use App\Repository\CustomerRepository;
-use App\Tests\AbstractApiTest;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-
-class ProductControllerTest extends WebTestCase
+class ProductControllerTest extends ApiWebTestCase
 {
-    protected function getToken()
-    {
-        $customerRepository = static::$container->get(CustomerRepository::class);
-        $testCustomer = $customerRepository->findOneBy(['email' => 'admin@marketplace1.fr']);
-        $jwtManager = self::$container->get('lexik_jwt_authentication.jwt_manager');
-
-        return $jwtManager->create($testCustomer);
-    }
-
     public function testGetProductsList()
     {
-        $client = static::createClient();
+        $client = $this->getAuthenticatedClient();
 
-        $client->request('GET', '/api/products/', [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $this->getToken()]);
+        $client->request('GET', '/api/products');
 
         $this->assertResponseIsSuccessful();
+    }
+
+    public function testGetProductItem()
+    {
+        $client = $this->getAuthenticatedClient();
+
+        $client->request('GET', '/api/products/1');
+
+        $this->assertResponseIsSuccessful();
+    }
+
+    public function testBadProductId()
+    {
+        $client = $this->getAuthenticatedClient();
+
+        $client->request('GET', '/api/products/19585632');
+
+        $this->assertEquals('{"message":404}', $client->getResponse()->getContent());
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testBadProductUrl()
+    {
+        $client = $this->getAuthenticatedClient();
+
+        $client->request('GET', '/api/products/badurl');
+
+        $this->assertEquals('{"message":404}', $client->getResponse()->getContent());
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testDeleteProductMustFail()
+    {
+        $client = $this->getAuthenticatedClient();
+
+        $client->request('DELETE', '/api/products/1');
+
+        $this->assertEquals('{"message":405}', $client->getResponse()->getContent());
+        $this->assertResponseStatusCodeSame(405);
+    }
+
+    public function testAddProductMustFail()
+    {
+        $client = $this->getAuthenticatedClient();
+
+        $client->request('POST', '/api/products');
+
+        $this->assertEquals('{"message":405}', $client->getResponse()->getContent());
+        $this->assertResponseStatusCodeSame(405);
     }
 }

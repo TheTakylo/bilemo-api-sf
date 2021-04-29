@@ -33,7 +33,7 @@ class ExceptionListener implements EventSubscriberInterface
         $response = null;
 
         foreach ($this->normalizers as $normalizer) {
-            if ($normalizer instanceof NormalizerInterface && $normalizer->supportsNormalization($exception)) {
+            if ($normalizer instanceof ApiAbstractNormalizer && $normalizer->supportsNormalization($exception)) {
                 $response = $normalizer->normalize($exception);
                 break;
             }

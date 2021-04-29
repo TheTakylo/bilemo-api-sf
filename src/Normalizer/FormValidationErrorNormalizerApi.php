@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 
-class FormValidationErrorNormalizer implements NormalizerInterface
+class FormValidationErrorNormalizerApi extends ApiAbstractNormalizer
 {
     public function normalize($object, string $format = null, array $context = []): Response
     {
