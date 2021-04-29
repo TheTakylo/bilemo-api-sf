@@ -10,7 +10,6 @@ class CustomerUserControllerTest extends ApiWebTestCase
 
         $client->request('GET', '/api/customer_users');
 
-        //$this->assertContains('[{"id":1,"email":"client1@gmail.com","password":"motdepasse","firstname":"John","lastname":"Doe","@id":"\/api\/customer_users\/1"},{"id":2,"email":"client2@gmail.com","password":"motdepasse","firstname":"John","lastname":"Doe","@id":"\/api\/customer_users\/2"},{"id":3,"email":"client3@gmail.com","password":"motdepasse","firstname":"John","lastname":"Doe","@id":"\/api\/customer_users\/3"}]', $client->getResponse()->getContent());
         $this->assertResponseIsSuccessful();
     }
 
@@ -20,7 +19,12 @@ class CustomerUserControllerTest extends ApiWebTestCase
 
         $client->request('GET', '/api/customer_users/1');
 
-      //  $this->assertContains('"email":"client1@gmail.com","password":"motdepasse","firstname":"John","lastname":"Doe"', $client->getResponse()->getContent());
+        $datas = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertEquals("client1@gmail.com", $datas['email']);
+        $this->assertEquals("motdepasse", $datas['password']);
+        $this->assertEquals("John", $datas['firstname']);
+        $this->assertEquals("Doe", $datas['lastname']);
         $this->assertResponseIsSuccessful();
     }
 
@@ -84,6 +88,7 @@ class CustomerUserControllerTest extends ApiWebTestCase
         $this->assertEquals("password", $datas['password']);
         $this->assertEquals("john", $datas['firstname']);
         $this->assertEquals("doe", $datas['lastname']);
+
         $this->assertResponseStatusCodeSame(200);
     }
 
