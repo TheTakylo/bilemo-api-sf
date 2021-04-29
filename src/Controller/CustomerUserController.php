@@ -8,6 +8,7 @@ use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Annotations as OA;
+use Psr\Cache\CacheItemPoolInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * @IsGranted("ROLE_USER")
@@ -39,9 +41,13 @@ class CustomerUserController extends AbstractController
      * )
      * @Route("", methods="GET")
      */
-    public function getCollection(CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer): Response
+    public function getCollection(CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
     {
-        $customers = $normalizer->normalize($customerUserRepository->findBy(['customer' => $this->getUser()]), null, ['groups' => 'read']);
+        $customers = $pool->get('collection_customer_users', function (ItemInterface $item) use ($customerUserRepository, $normalizer) {
+            $item->expiresAfter(3600);
+
+            return $normalizer->normalize($customerUserRepository->findBy(['customer' => $this->getUser()]), null, ['groups' => 'read']);
+        });
 
         foreach ($customers as $k => $v) {
             $customers[$k]['@id'] = $this->generateUrl('customer_users_getitem', ['id' => $v['id']]);
@@ -127,9 +133,13 @@ class CustomerUserController extends AbstractController
      * )
      * @Route("/{id<\d+>}", methods="GET", name="customer_users_getitem")
      */
-    public function getItem(int $id, CustomerUserRepository $customerUserRepository): Response
+    public function getItem(int $id, CustomerUserRepository $customerUserRepository, CacheItemPoolInterface $pool): Response
     {
-        $customer = $customerUserRepository->findOneBy(['id' => $id, 'customer' => $this->getUser()]);
+        $customer = $pool->get('collection_customer_user_' . $id, function (ItemInterface $item) use ($customerUserRepository, $id) {
+            $item->expiresAfter(3600);
+
+            return $customerUserRepository->findOneBy(['id' => $id, 'customer' => $this->getUser()]);
+        });
 
         if (!$customer) {
             throw $this->createNotFoundException();
@@ -154,7 +164,7 @@ class CustomerUserController extends AbstractController
      * )
      * @Route("/{id<\d+>}", methods="DELETE")
      */
-    public function deleteItem(int $id, CustomerUserRepository $customerUserRepository, EntityManagerInterface $em): Response
+    public function deleteItem(int $id, CustomerUserRepository $customerUserRepository, EntityManagerInterface $em, CacheItemPoolInterface $pool): Response
     {
         $customer = $customerUserRepository->findOneBy(['id' => $id, 'customer' => $this->getUser()]);
 
@@ -164,6 +174,8 @@ class CustomerUserController extends AbstractController
 
         $em->remove($customer);
         $em->flush();
+
+        $pool->deleteItem('collection_customer_user_' . $id);
 
         return new Response();
     }
