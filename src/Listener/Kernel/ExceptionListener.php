@@ -3,13 +3,12 @@
 namespace App\Listener\Kernel;
 
 use App\Normalizer\ApiAbstractNormalizer;
-use Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 class ExceptionListener implements EventSubscriberInterface
 {
@@ -17,10 +16,15 @@ class ExceptionListener implements EventSubscriberInterface
      * @var $normalizers
      */
     private $normalizers;
+    /**
+     * @var KernelInterface
+     */
+    private $kernel;
 
-    public function __construct(iterable $normalizers)
+    public function __construct(iterable $normalizers, KernelInterface $kernel)
     {
         $this->normalizers = $normalizers;
+        $this->kernel = $kernel;
     }
 
     public function onKernelException(ExceptionEvent $event)
@@ -39,6 +43,10 @@ class ExceptionListener implements EventSubscriberInterface
             if ($exception instanceof HttpExceptionInterface) {
                 $response = new JsonResponse(['message' => $exception->getStatusCode()], $exception->getStatusCode(), $exception->getHeaders());
             } else {
+                if($this->kernel->getEnvironment() === 'dev') {
+                    return;
+                }
+
                 $response = new JsonResponse(['message' => 'Internal Error'], 500);
             }
         }

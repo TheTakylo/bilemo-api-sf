@@ -6,6 +6,8 @@ use App\Entity\CustomerUser;
 use App\Exception\FormValidationErrorException;
 use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use OpenApi\Annotations as OA;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,10 +20,23 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * @IsGranted("ROLE_USER")
  * @Route("/api/customer_users")
+ * @OA\Tag(name="CustomerUser")
  */
 class CustomerUserController extends AbstractController
 {
     /**
+     * @OA\Get(
+     *   operationId="get-collection-customeruser",
+     *   summary="Get list of customer users",
+     *   @OA\Response(
+     *     response="200",
+     *     description="All customer users",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=CustomerUser::class, groups={"read"}))
+     *     )
+     *   )
+     * )
      * @Route("", methods="GET")
      */
     public function getCollection(CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer): Response
@@ -36,6 +51,42 @@ class CustomerUserController extends AbstractController
     }
 
     /**
+     * @OA\Post(
+     *   operationId="post-customeruser",
+     *   summary="Add a customer user",
+     * @OA\Parameter(
+     *     name="email",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(type="string")
+     * ),
+     * @OA\Parameter(
+     *     name="password",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(type="string")
+     * ),
+     * @OA\Parameter(
+     *     name="firstname",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(type="string")
+     * ),
+     * @OA\Parameter(
+     *     name="lastname",
+     *     in="query",
+     *     required=true,
+     *     @OA\Schema(type="string")
+     * ),
+     * @OA\Response(
+     *     response="200",
+     *     description="A customer user",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Items(ref=@Model(type=CustomerUser::class, groups={"read"}))
+     *     )
+     *   )
+     * )
      * @Route("", methods="POST")
      */
     public function postCollection(Request $request, EntityManagerInterface $em, SerializerInterface $serializer, ValidatorInterface $validator): Response
@@ -57,6 +108,23 @@ class CustomerUserController extends AbstractController
     }
 
     /**
+     * @OA\Get(
+     *   operationId="get-customeruser",
+     *   summary="Get a customer user",
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     @OA\Schema(type="integer")
+     * ),
+     * @OA\Response(
+     *     response="200",
+     *     description="A customer user",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Items(ref=@Model(type=CustomerUser::class, groups={"read"}))
+     *     )
+     *   )
+     * )
      * @Route("/{id<\d+>}", methods="GET", name="customer_users_getitem")
      */
     public function getItem(int $id, CustomerUserRepository $customerUserRepository): Response
@@ -71,6 +139,19 @@ class CustomerUserController extends AbstractController
     }
 
     /**
+     * @OA\Delete(
+     *     operationId="delete-customeruser",
+     *     summary="Delete a customer user",
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     @OA\Schema(type="integer")
+     * ),
+     * @OA\Response(
+     *     response="200",
+     *     description="Delete a customer user",
+     *   )
+     * )
      * @Route("/{id<\d+>}", methods="DELETE")
      */
     public function deleteItem(int $id, CustomerUserRepository $customerUserRepository, EntityManagerInterface $em): Response
