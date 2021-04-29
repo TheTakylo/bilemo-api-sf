@@ -6,11 +6,13 @@ use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use OpenApi\Annotations as OA;
+use Psr\Cache\CacheItemPoolInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 
 /**
  * @IsGranted("ROLE_USER")
@@ -34,9 +36,13 @@ class ProductController extends AbstractController
      * )
      * @Route("", methods={"GET"})
      */
-    public function getCollection(ProductRepository $productRepository, NormalizerInterface $normalizer): Response
+    public function getCollection(ProductRepository $productRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
     {
-        $products = $normalizer->normalize($productRepository->findAll());
+        $products = $pool->get('collection_products', function (ItemInterface $item) use ($normalizer, $productRepository) {
+            $item->expiresAfter(3600);
+
+            return $normalizer->normalize($productRepository->findAll());
+        });
 
         foreach ($products as $k => $v) {
             $products[$k]['@id'] = $this->generateUrl('product_getitem', ['id' => $v['id']]);
@@ -65,9 +71,13 @@ class ProductController extends AbstractController
      * )
      * @Route("/{id<\d+>}", methods={"GET"}, name="product_getitem")
      */
-    public function getItem(int $id, ProductRepository $productRepository): Response
+    public function getItem(int $id, ProductRepository $productRepository, CacheItemPoolInterface $pool): Response
     {
-        $product = $productRepository->findOneBy(['id' => $id]);
+        $product = $pool->get('collection_product_' . $id, function (ItemInterface $item) use ($productRepository, $id) {
+            $item->expiresAfter(3600);
+
+            return $productRepository->findOneBy(['id' => $id]);
+        });
 
         if (!$product) {
             throw $this->createNotFoundException();
