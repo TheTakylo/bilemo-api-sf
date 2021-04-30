@@ -27,6 +27,12 @@ services:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
+    App\Listener\Doctrine\TablePrefix:
+        arguments:
+            $prefix: '%env(string:DATABASE_PREFIX)%'
+        tags:
+            - { name: doctrine.event_subscriber, connection: default }
+
     App\Listener\Kernel\ExceptionListener:
         arguments:
             $normalizers: !tagged { tag: 'serializer.normalizer' }
