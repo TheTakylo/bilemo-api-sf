@@ -1,0 +1,46 @@
+name: PHPUnit
+on: [ push, pull_request ]
+jobs:
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [ '7.2', '7.3', '7.4' ]
+      fail-fast: false
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: p7_sebastien_thuret_bilemo_api_sf_tests
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install composer dependencies
+        run: composer install
+
+      - name: Install database and fixtures
+        run: |
+          php bin/console doctrine:schema:update --force --no-interaction
+          php bin/console doctrine:fixtures:load --no-interaction
+        env:
+          DATABASE_URL: mysql://root:root@127.0.0.1:${{ job.services.mysql.ports['3306'] }}/p7_sebastien_thuret_bilemo_api_sf_tests
+
+      - name: Run phpunit
+        run: ./bin/phpunit -c phpunit.xml
+        env:
+          DB_PORT: ${{ job.services.mysql.ports[3306] }}
