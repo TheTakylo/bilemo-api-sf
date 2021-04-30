@@ -13,7 +13,7 @@ Lien de la doc: https://p7-bilemo-api.sebastien-thuret.fr/api/doc
 ## Récupération des sources
 
 ```
-git clone git@github.com:TheTakylo/p6-snowtricks.git
+git clone git@github.com:TheTakylo/bilemo-api-sf.git
 ```
 
 ### Installation des dépendences via composer
