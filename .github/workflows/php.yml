@@ -44,4 +44,3 @@ jobs:
         run: ./bin/phpunit -c phpunit.xml
         env:
           DB_PORT: ${{ job.services.mysql.ports[3306] }}
-          
