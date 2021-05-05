@@ -2,8 +2,8 @@
 
 namespace App\Repository;
 
+use App\Entity\Customer;
 use App\Entity\CustomerUser;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -12,11 +12,20 @@ use Doctrine\Persistence\ManagerRegistry;
  * @method CustomerUser[]    findAll()
  * @method CustomerUser[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class CustomerUserRepository extends ServiceEntityRepository
+class CustomerUserRepository extends AbstractPaginateEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, CustomerUser::class);
+    }
+
+    public function findByPaginated(Customer $customer, int $currentPage, int $perPage)
+    {
+        $queryBuilder = $this->createQueryBuilder('p')
+            ->where('p.customer = :customer')
+            ->setParameter('customer', $customer);
+
+        return $this->paginate($currentPage, $perPage, $queryBuilder);
     }
 
     // /**

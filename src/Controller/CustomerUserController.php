@@ -32,6 +32,11 @@ class CustomerUserController extends AbstractController
      * @OA\Get(
      *   operationId="get-collection-customeruser",
      *   summary="Get list of customer users",
+     *  @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     @OA\Schema(type="integer")
+     * ),
      *   @OA\Response(
      *     response="200",
      *     description="All customer users",
@@ -43,16 +48,18 @@ class CustomerUserController extends AbstractController
      * )
      * @Route("", methods="GET")
      */
-    public function getCollection(CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
+    public function getCollection(Request $request, CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
     {
-        $customers = $pool->get('collection_customer_users', function (ItemInterface $item) use ($customerUserRepository, $normalizer) {
+        $page = $request->query->getInt('page', 1);
+
+        $customers = $pool->get('collection_customer_users_' . $page, function (ItemInterface $item) use ($customerUserRepository, $normalizer, $page) {
             $item->expiresAfter(3600);
 
-            return $normalizer->normalize($customerUserRepository->findBy(['customer' => $this->getUser()]), null, ['groups' => 'read']);
+            return $normalizer->normalize($customerUserRepository->findByPaginated($this->getUser(), $page, 10), null, ['groups' => 'read']);
         });
 
-        foreach ($customers as $k => $v) {
-            $customers[$k]['@id'] = $this->generateUrl('customer_users_getitem', ['id' => $v['id']]);
+        foreach ($customers['items'] as $k => $v) {
+            $customers['items'][$k]['@id'] = $this->generateUrl('customer_users_getitem', ['id' => $v['id']]);
         }
 
         return $this->json($customers, 200);

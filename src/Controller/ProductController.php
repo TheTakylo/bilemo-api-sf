@@ -10,6 +10,7 @@ use OpenApi\Annotations as OA;
 use Psr\Cache\CacheItemPoolInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -27,6 +28,11 @@ class ProductController extends AbstractController
      * @OA\Get(
      *   operationId="get-collection-product",
      *   summary="Get list of products",
+     *  @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     @OA\Schema(type="integer")
+     * ),
      * @OA\Response(
      *     response="200",
      *     description="All products",
@@ -38,16 +44,18 @@ class ProductController extends AbstractController
      * )
      * @Route("", methods={"GET"})
      */
-    public function getCollection(ProductRepository $productRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
+    public function getCollection(Request $request, ProductRepository $productRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
     {
-        $products = $pool->get('collection_products', function (ItemInterface $item) use ($normalizer, $productRepository) {
+        $page = $request->query->getInt('page', 1);
+
+        $products = $pool->get('collection_products_' . $page, function (ItemInterface $item) use ($normalizer, $productRepository, $page) {
             $item->expiresAfter(3600);
 
-            return $normalizer->normalize($productRepository->findAll());
+            return $normalizer->normalize($productRepository->paginate($page, 10));
         });
 
-        foreach ($products as $k => $v) {
-            $products[$k]['@id'] = $this->generateUrl('product_getitem', ['id' => $v['id']]);
+        foreach ($products['items'] as $k => $v) {
+            $products['items'][$k]['@id'] = $this->generateUrl('product_getitem', ['id' => $v['id']]);
         }
 
         return $this->json($products);
