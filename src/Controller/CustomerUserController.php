@@ -7,6 +7,7 @@ use App\Exception\FormValidationErrorException;
 use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 use Psr\Cache\CacheItemPoolInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -20,6 +21,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
+ * @Security(name="Bearer")
  * @IsGranted("ROLE_USER")
  * @Route("/api/customer_users")
  * @OA\Tag(name="CustomerUser")
@@ -57,35 +59,12 @@ class CustomerUserController extends AbstractController
     }
 
     /**
+     * @OA\RequestBody(@Model(type=CustomerUser::class, groups={"write"}))
      * @OA\Post(
      *   operationId="post-customeruser",
      *   summary="Add a customer user",
-     * @OA\Parameter(
-     *     name="email",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
-     * @OA\Parameter(
-     *     name="password",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
-     * @OA\Parameter(
-     *     name="firstname",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
-     * @OA\Parameter(
-     *     name="lastname",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
      * @OA\Response(
-     *     response="200",
+     *     response="201",
      *     description="A customer user",
      *     @OA\JsonContent(
      *        type="object",
@@ -110,7 +89,7 @@ class CustomerUserController extends AbstractController
         $em->persist($customerUser);
         $em->flush();
 
-        return $this->json($customerUser, 200, [], ['groups' => 'read']);
+        return $this->json($customerUser, 201, [], ['groups' => 'read']);
     }
 
     /**
@@ -158,7 +137,7 @@ class CustomerUserController extends AbstractController
      *     @OA\Schema(type="integer")
      * ),
      * @OA\Response(
-     *     response="200",
+     *     response="204",
      *     description="Delete a customer user",
      *   )
      * )
@@ -177,6 +156,6 @@ class CustomerUserController extends AbstractController
 
         $pool->deleteItem('collection_customer_user_' . $id);
 
-        return new Response();
+        return new Response('', 204);
     }
 }

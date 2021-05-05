@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 use Psr\Cache\CacheItemPoolInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -15,6 +16,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
+ * @Security(name="Bearer")
  * @IsGranted("ROLE_USER")
  * @Route("/api/products")
  * @OA\Tag(name="Product")
