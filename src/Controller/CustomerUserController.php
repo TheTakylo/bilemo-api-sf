@@ -7,6 +7,7 @@ use App\Exception\FormValidationErrorException;
 use App\Repository\CustomerUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 use Psr\Cache\CacheItemPoolInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -20,6 +21,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
 /**
+ * @Security(name="Bearer")
  * @IsGranted("ROLE_USER")
  * @Route("/api/customer_users")
  * @OA\Tag(name="CustomerUser")
@@ -30,6 +32,11 @@ class CustomerUserController extends AbstractController
      * @OA\Get(
      *   operationId="get-collection-customeruser",
      *   summary="Get list of customer users",
+     *  @OA\Parameter(
+     *     name="page",
+     *     in="query",
+     *     @OA\Schema(type="integer")
+     * ),
      *   @OA\Response(
      *     response="200",
      *     description="All customer users",
@@ -41,51 +48,30 @@ class CustomerUserController extends AbstractController
      * )
      * @Route("", methods="GET")
      */
-    public function getCollection(CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
+    public function getCollection(Request $request, CustomerUserRepository $customerUserRepository, NormalizerInterface $normalizer, CacheItemPoolInterface $pool): Response
     {
-        $customers = $pool->get('collection_customer_users', function (ItemInterface $item) use ($customerUserRepository, $normalizer) {
+        $page = $request->query->getInt('page', 1);
+
+        $customers = $pool->get('collection_customer_users_' . $page, function (ItemInterface $item) use ($customerUserRepository, $normalizer, $page) {
             $item->expiresAfter(3600);
 
-            return $normalizer->normalize($customerUserRepository->findBy(['customer' => $this->getUser()]), null, ['groups' => 'read']);
+            return $normalizer->normalize($customerUserRepository->findByPaginated($this->getUser(), $page, 10), null, ['groups' => 'read']);
         });
 
-        foreach ($customers as $k => $v) {
-            $customers[$k]['@id'] = $this->generateUrl('customer_users_getitem', ['id' => $v['id']]);
+        foreach ($customers['items'] as $k => $v) {
+            $customers['items'][$k]['@id'] = $this->generateUrl('customer_users_getitem', ['id' => $v['id']]);
         }
 
         return $this->json($customers, 200);
     }
 
     /**
+     * @OA\RequestBody(@Model(type=CustomerUser::class, groups={"write"}))
      * @OA\Post(
      *   operationId="post-customeruser",
      *   summary="Add a customer user",
-     * @OA\Parameter(
-     *     name="email",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
-     * @OA\Parameter(
-     *     name="password",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
-     * @OA\Parameter(
-     *     name="firstname",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
-     * @OA\Parameter(
-     *     name="lastname",
-     *     in="query",
-     *     required=true,
-     *     @OA\Schema(type="string")
-     * ),
      * @OA\Response(
-     *     response="200",
+     *     response="201",
      *     description="A customer user",
      *     @OA\JsonContent(
      *        type="object",
@@ -110,7 +96,7 @@ class CustomerUserController extends AbstractController
         $em->persist($customerUser);
         $em->flush();
 
-        return $this->json($customerUser, 200, [], ['groups' => 'read']);
+        return $this->json($customerUser, 201, [], ['groups' => 'read']);
     }
 
     /**
@@ -158,7 +144,7 @@ class CustomerUserController extends AbstractController
      *     @OA\Schema(type="integer")
      * ),
      * @OA\Response(
-     *     response="200",
+     *     response="204",
      *     description="Delete a customer user",
      *   )
      * )
@@ -177,6 +163,6 @@ class CustomerUserController extends AbstractController
 
         $pool->deleteItem('collection_customer_user_' . $id);
 
-        return new Response();
+        return new Response('', 204);
     }
 }

@@ -6,7 +6,9 @@ Lien du repository:
 
 Lien Symfony Insight: https://insight.symfony.com/projects/17890c2c-074a-4d38-a269-95fc4e22ad0a
 
-Lien de la doc: https://p7-bilemo-api.sebastien-thuret.fr/api/doc
+Lien de la doc Redoc: https://p7-bilemo-api.sebastien-thuret.fr/api/doc
+
+Lien de la doc Swagger: https://p7-bilemo-api.sebastien-thuret.fr/api/doc_swagger
 
 # Installation
 

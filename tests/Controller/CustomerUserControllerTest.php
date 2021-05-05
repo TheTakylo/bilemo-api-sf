@@ -55,6 +55,7 @@ class CustomerUserControllerTest extends ApiWebTestCase
         $client->request('DELETE', '/api/customer_users/1');
 
         $this->assertEquals('', $client->getResponse()->getContent());
+        $this->assertResponseStatusCodeSame(204);
         $this->assertResponseIsSuccessful();
     }
 
@@ -89,7 +90,7 @@ class CustomerUserControllerTest extends ApiWebTestCase
         $this->assertEquals("john", $datas['firstname']);
         $this->assertEquals("doe", $datas['lastname']);
 
-        $this->assertResponseStatusCodeSame(200);
+        $this->assertResponseStatusCodeSame(201);
     }
 
     public function testGetCustomerUserRelatedToAnotherCustomerMustFail()
