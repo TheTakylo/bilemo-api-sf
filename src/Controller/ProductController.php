@@ -74,7 +74,7 @@ class ProductController extends AbstractController
      *     response="200",
      *     description="A product",
      *     @OA\JsonContent(
-     *        type="object",
+     *        type="array",
      *        @OA\Items(ref=@Model(type=Product::class, groups={"read"}))
      *     )
      *   )
