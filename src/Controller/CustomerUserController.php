@@ -74,7 +74,7 @@ class CustomerUserController extends AbstractController
      *     response="201",
      *     description="A customer user",
      *     @OA\JsonContent(
-     *        type="object",
+     *        type="array",
      *        @OA\Items(ref=@Model(type=CustomerUser::class, groups={"read"}))
      *     )
      *   )
@@ -112,7 +112,7 @@ class CustomerUserController extends AbstractController
      *     response="200",
      *     description="A customer user",
      *     @OA\JsonContent(
-     *        type="object",
+     *        type="array",
      *        @OA\Items(ref=@Model(type=CustomerUser::class, groups={"read"}))
      *     )
      *   )
